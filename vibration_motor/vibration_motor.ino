@@ -67,6 +67,7 @@ void vibrate_old(int n_pulse, int pulse_strength) {
 }
 
 
-void vibrate() {
-  // TODO
+void vibrate() 
+{
+  
 }

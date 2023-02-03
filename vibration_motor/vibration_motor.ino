@@ -15,6 +15,20 @@ void setup()
 
 void loop()
 {
+  // Random Number Generator
+  sonar_dist = rand(0, 300);
+  
+  // Get pulse strength
+  pulse_strength = map(sonar_dist, 0, 300, 80, 255);
+    
+  // Depending on values, give a certain number of pulses and forward the pulse_strength
+  if (pulse_strength > 250);
+  {
+    vibrate_old(4, pulse_strength);
+  }
+  else
+    vibrate_old(3, pulse_strength);
+  
   // TODO: Create a similar function as vibrate_old() but make it without delay
   // Currently the vibrate_old function uses delays and this blocks the code
   // update it so that it runs concurrently with the rest of the code

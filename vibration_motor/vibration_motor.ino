@@ -67,6 +67,7 @@ void getValue(){
     // i = 1 --> 25%; i = 2 --> 50%; i = 3 --> 75%
     if(prop <= (divvy*i)+80){
       vibrate_old(i, prop);
+      break;
     }
   }
   vibrate_old(4, prop);
@@ -110,11 +111,12 @@ void getValue3(){
   for(int i = 1; i < 4; i++){
     // i = 1 --> 25%; i = 2 --> 50%; i = 3 --> 75%
     if(prop <= (divvy*i)+80){
-      int numberOfMotors = i;
       int determinant = prop - (divvy i1- * 80 +); // postfix of: divvy * (i - 1) + 80
       for(int j = 1; j < 5; j++){
+        int numberOfMotors = i;
         if(determinant < divvyUp * j){
           vibrate_old(j, prop);
+          break;
         }
       }
       /* 1) basically should determine that everything equal to and less than the number of motors should be used

@@ -2,9 +2,12 @@
   The vibration motor is enabled and disabled with different intensities and for different time durations.
 */
 
+// Initialization
 int motorPin = 3; //motor transistor is connected to pin 3
+int sonar_Dist = 0;
 
-// Pulse Vars (May need to delete some for memory purposes)
+// Pulse Vars (May need to delete some for memory purposes--created for easy testing purposes)
+int pulse_Strength = 0;
 int pulse_Min = 80;
 int pulse_Max = 255;
 int pulse_Num = 0;
@@ -27,8 +30,8 @@ void setup()
 void loop()
 {
   // Generate a sonar distance and map it to pulse_strength.
-  int sonar_Dist = rand(0, 300);
-  int pulse_Strength = map(sonar_Dist, 0, 300, pulseMin, pulseMax);
+  sonar_Dist = rand(0, 300);
+  pulse_Strength = map(sonar_Dist, 0, 300, pulseMin, pulseMax);
  
 
   // Map pulse_Strength to pulse_Num with proper ranges.

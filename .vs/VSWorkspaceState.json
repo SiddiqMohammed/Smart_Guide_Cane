@@ -1,0 +1,10 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\filter_test",
+    "\\kalman_filter_sr04",
+    "\\vibration_motor"
+  ],
+  "SelectedNode": "\\vibration_motor\\vibration_motor.ino",
+  "PreviewInSolutionExplorer": false
+}

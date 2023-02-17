@@ -1,6 +1,6 @@
-include<ezButton.h>
+#include <ezButton.h>
 
-  ezButton button(7);                 // create ezButton object that attach to pin 7;
+ezButton button(7);                   // create ezButton object that attach to pin 7;
 volatile bool buttonPressed = false;  // A flag to indicate whether the button has been pressed
 
 int motorPin = 3;
@@ -44,7 +44,7 @@ void loop() {
   if (button.isPressed()) {
     Serial.println("The button is pressed");
     buttonPressed = !buttonPressed;
-    vi
+    vibrateMotorPttern(2);
   }
 
   if (buttonPressed) {

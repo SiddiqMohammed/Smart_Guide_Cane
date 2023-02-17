@@ -2,9 +2,23 @@
   The vibration motor is enabled and disabled with different intensities and for different time durations.
 */
 
+// Initialization
 int motorPin = 3; //motor transistor is connected to pin 3
-int n_pulse = 3;
-int pulse_strength = 0;
+int sonar_Dist = 0;
+
+// Pulse Vars (May need to delete some for memory purposes--created for easy testing purposes)
+int pulse_Strength = 0;
+int pulse_Min = 80;
+int pulse_Max = 255;
+int pulse_Num = 0;
+int min_pulses = 1;
+int max_pulses = 4;
+int q_increment = (pulse_Max - pulse_Min) / 4;  // quadrant incrementor
+int q1_max = (int) (pulse_Min + q_increment);   // quadrant bounds
+int q2_max = (int) (q1_max + q_increment);
+int q3_max = (int) (q2_max + q_increment);
+
+
 
 void setup()
 {
@@ -15,6 +29,26 @@ void setup()
 
 void loop()
 {
+  // Generate a sonar distance and map it to pulse_strength.
+  sonar_Dist = rand(0, 300);
+  pulse_Strength = map(sonar_Dist, 0, 300, pulseMin, pulseMax);
+ 
+
+  // Map pulse_Strength to pulse_Num with proper ranges.
+  if(pulse_Strength > q3_max)
+    pulse_Num = map(pulse_Strength, q3_max, pulse_Max, min_pulses, max_pulses);
+  else if(pulse_Strength > q2_max)
+    pulse_Num = map(pulse_Strength, q2_max, q3_max, min_pulses, max_pulses);
+  else if(pulse_Strength > q1_max)
+    pulse_Num = map(pulse_Strength, q1_max, q2_max, min_pulses, max_pulses);
+  else
+    pulse_Num = map(pulse_Strength, pulse_Min, q1_max, min_pulses, max_pulses);
+
+  // Vibrate with achieved values.
+  vibrate_old(pulse_Num, pulse_Strength);
+  
+  
+  
   // TODO: Create a similar function as vibrate_old() but make it without delay
   // Currently the vibrate_old function uses delays and this blocks the code
   // update it so that it runs concurrently with the rest of the code
@@ -23,14 +57,14 @@ void loop()
   // vibrate();
 
 
-  vibrate_old(3, 80);
+  /*vibrate_old(3, 80);
   delay(1000);
   vibrate_old(3, 120);
   delay(1000);
   vibrate_old(3, 200);
   delay(1000);
   vibrate_old(4, 250);
-  delay(1000);
+  delay(1000);*/
 
 }
 

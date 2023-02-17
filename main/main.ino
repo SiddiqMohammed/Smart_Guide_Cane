@@ -1,5 +1,7 @@
-#include <ezButton.h>
+#include "Maxbotix.h"
+Maxbotix rangeSensorPW(8, Maxbotix::PW, Maxbotix::LV);
 
+#include <ezButton.h>
 ezButton button(7);                   // create ezButton object that attach to pin 7;
 volatile bool buttonPressed = false;  // A flag to indicate whether the button has been pressed
 
@@ -59,16 +61,12 @@ void loop() {
   }
 }
 
-void toggleButton() {
-  // TODO - make a button reader that changes flag state
-  // to start/stop the entire system.
-}
-
 void readSensor() {
   // TODO
   // Get values from the sonar and do the if-else arguments here
   int sonar_dist = 0;
-  sonar_dist = random(0, 300);  // Change this to ez sensor thing
+  Serial.print(rangeSensorPW.getRange());
+  sonar_dist = rangeSensorPW.getRange();
   sonar_dist = dataFiltering(sonar_dist);
   convert(sonar_dist);
 }
@@ -80,8 +78,8 @@ int dataFiltering(int sonar_dist) {
   return sonar_dist;
 }
 
-void convert(int conversion) {
-  pulse_strength = map(conversion, 0, 300, pulse_min, pulse_max);
+void convert(int value) {
+  pulse_strength = map(value, 0, 300, pulse_min, pulse_max);
   if (pulse_strength > q3_max)
     n_motors = map(pulse_strength, q3_max, pulse_max, 1, 4);
   else if (pulse_strength > q2_max)

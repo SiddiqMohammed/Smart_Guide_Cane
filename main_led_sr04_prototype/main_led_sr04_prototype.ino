@@ -24,6 +24,7 @@ void setup() {
   // put your setup code here, to run once:
    Serial.begin(9600);
    pinMode(motor_pin, OUTPUT);
+   pinMode(buttonPin, INPUT);
 }
 
 void loop() {
@@ -127,18 +128,17 @@ void BMS(long unsigned &last_time) {
   double curr_voltage = readVoltage(VOLT_PIN);
   double low_volt = 2;
   //sensorValue = analogRead(sensorPin);
-  // turn the ledPin on
   if ((curr_voltage < low_volt) && ((curr_time - last_time > warning_delay) || (last_time == 0))) {
     Serial.print("Low Power");
     analogWrite(motor_pin, 0);
     for(int i=1; i < 12; i++) {
   
     analogWrite(motor_pin, 250);
-   // stop the program for <sensorValue> milliseconds:
+   // stop the program for <200> milliseconds:
     delay(200);
    // turn the ledPin off:
     analogWrite(motor_pin, 0);
-   // stop the program for for <sensorValue> milliseconds:
+   // stop the program for for <200> milliseconds:
     delay(200);
     
     }

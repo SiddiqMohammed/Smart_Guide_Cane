@@ -70,6 +70,18 @@ void vibrateMotors() {
 void readVoltage() {
   // TODO
   // read the voltage from the batteries using analog read
+  
+  void setup() {
+  Serial.begin(9600);
+}
+
+
+void loop() {
+  
+  int sensorVal = analogRead(A0);
+  float voltage = sensorVal * (5.0 / 1023.0);
+  Serial.println(voltage);
+}
 }
 
 void BMS() {

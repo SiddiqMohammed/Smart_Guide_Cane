@@ -1,12 +1,12 @@
-#include <Maxbotix.h>
+//#include <Maxbotix.h>
 #include <SR04.h>
-#define TRIG_PIN 7
-#define ECHO_PIN 6
+#define TRIG_PIN 6
+#define ECHO_PIN 5
 #define VOLT_PIN A1
 SR04 sr04 = SR04(ECHO_PIN,TRIG_PIN);
 int pw_pin = 9;
 int buttonPin = 8;
-int motor_pin = 5;
+int motor_pin = 4;
 int debounceTime = 50;
 //Maxbotix rangeSensorPW(pw_pin, Maxbotix::PW, Maxbotix::LV);
 double distance;
@@ -14,23 +14,27 @@ int toggleState;
 int lastButtonState = 1;
 long unsigned int lastPress;
 long unsigned int lastTimeBMS = 0;
-double max_dist = 100;
+long unsigned int lastTimeMotor = 0;
+int toggleMotor = 0;
+double max_dist = 150;
 double kaldist;
 double old_kaldist = 10;
 double fil_dist;
 double battery_volt;
+double low_volt = 2.5;
 
 void setup() {
   // put your setup code here, to run once:
    Serial.begin(9600);
    pinMode(motor_pin, OUTPUT);
    pinMode(buttonPin, INPUT);
+   pinMode(VOLT_PIN, INPUT);
 }
 
 void loop() {
   toggleButton(lastButtonState, toggleState);
   //Serial.println(toggleState);
-  if (toggleState ==0) {
+  if (toggleState == 0) {
   battery_volt = readVoltage(VOLT_PIN);
   //Serial.println(battery_volt);
   //toggleButton(lastButtonState, toggleState);
@@ -45,11 +49,9 @@ void loop() {
   old_kaldist = kaldist;
   fil_dist = expo_filter(old_kaldist, kaldist);
   Serial.println(fil_dist);
-  vibrateMotors(fil_dist);
+  vibrateMotors(fil_dist,lastTimeMotor,toggleMotor);
   BMS(lastTimeBMS);
   }
-
-
 }
 
 void toggleButton(int &lastButtonState, int &toggleState) {
@@ -86,24 +88,43 @@ double readSensor() {
   
 }
 
-void vibrateMotors(double distance) {
+void vibrateMotors(double distance, long unsigned &last_time_motor, int &on_off_toggle) {
   // TODO
   // Based on the sonar sensor values vibrate n number of motors
+  
   if (distance > max_dist) {
     distance = max_dist;
   }
+  
   double vibe_val = 250 - (distance * (250.0/ max_dist));
-  //Serial.println(vibe_val);
-  analogWrite(motor_pin, vibe_val);
-  delay(distance * 0.5 + 0.1);
-  analogWrite(motor_pin, 0);
-  delay(distance * 0.5 + 0.1);
-//  if (distance * 0.5) {
-//    Serial.println("Running Case 1");
+  double vibe_delay = (distance * 0.8) + 5;
+  long unsigned curr_time = millis();
+  if (((curr_time - last_time_motor > vibe_delay) || (last_time_motor == 0))) {
+    if (on_off_toggle == 0) {
+      analogWrite(motor_pin, vibe_val);
+      
+    }
+    else {
+      analogWrite(motor_pin, 0);
+    }
+    on_off_toggle =! on_off_toggle;
+    last_time_motor = millis();
+  }
+  ////Serial.println(vibe_val);
+//  analogWrite(motor_pin, vibe_val);
+//  delay(distance * 0.5 + 0.1);
+//  analogWrite(motor_pin, 0);
+//  delay(distance * 0.5 + 0.1);
+
+  
+//  if (distance > 30 && distance < 40) {
+//    Serial.println("Running");
 //    analogWrite(motor_pin, 200);
+//    delay(distance * 0.5 + 0.1);
 //  }
 //  else {
 //    analogWrite(motor_pin, LOW);
+//    delay(distance * 0.5 + 0.1);
 //  }
 }
 
@@ -113,10 +134,11 @@ double readVoltage(int pin) { //make a double and make the pin input a parameter
   double volt_reading = analogRead(pin);
   float voltage = volt_reading * (5.0 / 1023.0);
   return voltage;
+  //return volt_reading;
   
 }
 
-void BMS(long unsigned &last_time) {
+void BMS(long unsigned &last_time_battery) {
   // TODO - Battery management system
   // run readVoltage and also run vibrations in low battery mode
   // Morse maybe?
@@ -126,9 +148,9 @@ void BMS(long unsigned &last_time) {
   long unsigned curr_time = millis(); 
   
   double curr_voltage = readVoltage(VOLT_PIN);
-  double low_volt = 2;
+  //Serial.println(curr_voltage);
   //sensorValue = analogRead(sensorPin);
-  if ((curr_voltage < low_volt) && ((curr_time - last_time > warning_delay) || (last_time == 0))) {
+  if ((curr_voltage < low_volt) && ((curr_time - last_time_battery > warning_delay) || (last_time_battery == 0))) {
     Serial.print("Low Power");
     analogWrite(motor_pin, 0);
     for(int i=1; i < 12; i++) {
@@ -142,7 +164,7 @@ void BMS(long unsigned &last_time) {
     delay(200);
     
     }
-    last_time = millis();
+    last_time_battery = millis();
     
 //  if ((curr_voltage <= low_volt)&((millis()-last)>10000)) {
 //    for (int i=1; i < 3; i++) {
@@ -173,6 +195,7 @@ double dataFiltering(double data){
 void sysStop(){
   // TODO
   // Stops everything, resets all states and also turns off any running vibrations
+  
   
 }
 

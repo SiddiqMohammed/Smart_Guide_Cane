@@ -89,6 +89,37 @@ void BMS() {
   // run readVoltage and also run vibrations in low battery mode
   // Morse maybe?
   // Run this function at startup and once after every n minutes.
+  int motorPin = 3;
+double lowBattery = 3.93;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(motorPin, OUTPUT);  // sets the pin as output
+}
+
+
+void loop() {
+
+  int sensorVal = analogRead(A0);
+  float voltage = sensorVal * (5.0 / 1023.0);
+  Serial.println(voltage);
+
+
+  if (voltage <= lowBattery) {
+    Serial.println("batterylow");
+    analogWrite(motorPin, 255);  // turn on motor on full power (range is 0 - 255)
+    delay(2000);                 // wait 2 sec., so motor will vibrate for 2 sec
+
+    analogWrite(motorPin, 125);  // turn on motor on half power
+    delay(2000);                 // wait 2 sec., so motor will vibrate for 2 sec
+
+    analogWrite(motorPin, 0);  // turn off motor
+    delay(2000);               // wait 2 sec., so motor will be off for 2 sec
+  }
+  delay(5000);
+}
+
+
 }
 
 void dataFiltering(){

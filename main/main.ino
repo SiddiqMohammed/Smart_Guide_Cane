@@ -4,7 +4,7 @@
 int pw_pin = 9;
 Maxbotix rangeSensorPW(pw_pin, Maxbotix::PW, Maxbotix::LV);
 int buttonPin = 8;
-int motor_pin = 4;
+int motor_pin = 5;
 int debounceTime = 50;
 double distance;
 
@@ -17,7 +17,7 @@ long unsigned int lastTimeMotor = 0;
 
 int toggleMotor = 0;
 
-double max_dist = 200;
+double max_dist = 250;
 double kaldist;
 double old_kaldist = 50;
 double fil_dist;
@@ -35,26 +35,26 @@ void setup() {
 }
 
 void loop() {
-  toggleButton(lastButtonState, toggleState);
+  //toggleButton(lastButtonState, toggleState);
   //Serial.println(toggleState);
-  if (toggleState == 0) {
-  battery_volt = readVoltage(VOLT_PIN);
+  //if (toggleState == 0) {
+  //battery_volt = readVoltage(VOLT_PIN);
   //Serial.println(battery_volt);
   //toggleButton(lastButtonState, toggleState);
   //distance = rangeSensorPW.getRange();
   
   distance = readSensor();
-  Serial.println(distance);
+  //Serial.println(distance);
   kaldist = dataFiltering(distance);
   //Serial.println(kaldist);
   
   //delay(50);
   old_kaldist = kaldist;
   fil_dist = expo_filter(old_kaldist, kaldist);
-  Serial.println(fil_dist);
-  vibrateMotors(kaldist,lastTimeMotor,toggleMotor);
-  BMS(lastTimeBMS);
-  }
+  //Serial.println(kaldist);
+  vibrateMotors(fil_dist,lastTimeMotor,toggleMotor);
+  //BMS(lastTimeBMS);
+  //}
 }
 
 void toggleButton(int &lastButtonState, int &toggleState) {
@@ -99,19 +99,23 @@ void vibrateMotors(double distance, long unsigned &last_time_motor, int &on_off_
     distance = max_dist;
   }
   
-  double vibe_val = 250 - (distance * (250.0/ max_dist));
-  double vibe_delay = (distance * 0.2) + 5;
-  long unsigned curr_time = millis();
-  if (((curr_time - last_time_motor > vibe_delay) || (last_time_motor == 0))) {
-    if (on_off_toggle == 0) {
-      analogWrite(motor_pin, vibe_val);
-    }
-    else {
-      analogWrite(motor_pin, 0);
-    }
-    on_off_toggle =! on_off_toggle;
-    last_time_motor = millis();
-  }
+  // vibe_val = 250 - (distance * (250.0/ max_dist));
+  int vibe_val = 255 - map(distance, 10, 250, 0, 255);
+  double vibe_delay = ((distance * distance) * 0.01);
+  analogWrite(motor_pin, vibe_val);
+  
+  Serial.println(vibe_val);
+//  long unsigned curr_time = millis();
+//  if (((curr_time - last_time_motor > vibe_delay) || (last_time_motor == 0))) {
+//    if (on_off_toggle == 0) {
+//      analogWrite(motor_pin, vibe_val);
+//    }
+//    else {
+//      analogWrite(motor_pin, 0);
+//    }
+//    on_off_toggle =! on_off_toggle;
+//    last_time_motor = millis();
+//  }
 }
 
 double readVoltage(int pin) { //make a double and make the pin input a parameter (int pin)

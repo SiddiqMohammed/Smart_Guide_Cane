@@ -29,6 +29,8 @@ int q3_max = (int)(q2_max + q_increment);
 // Define the pattern for the SOS signal
 int sosPattern[] = { 200, 200, 200, 600, 600, 600, 200, 200, 200 };
 
+const float alpha = 0.3;
+int expoFilteredValue;
 
 void setup() {
   // put your setup code here, to run once:
@@ -59,15 +61,17 @@ void loop() {
     }
     readSensor();
   }
+
+  sysStop();
 }
 
 void readSensor() {
   // TODO
   // Get values from the sonar and do the if-else arguments here
   int sonar_dist = 0;
-  Serial.print(rangeSensorPW.getRange());
   sonar_dist = rangeSensorPW.getRange();
   sonar_dist = dataFiltering(sonar_dist);
+  Serial.print(sonar_dist);
   convert(sonar_dist);
 }
 
@@ -75,31 +79,34 @@ int dataFiltering(int sonar_dist) {
   // TODO
   // Write all the filtering related code here.
   // This function should return filtered values.
-  return sonar_dist;
+  expoFilteredValue = (alpha * sonar_dist) + ((1 - alpha) * expoFilteredValue);
+
+  return expoFilteredValue;
 }
 
 void convert(int value) {
-  pulse_strength = map(value, 0, 300, pulse_min, pulse_max);
-  if (pulse_strength > q3_max)
-    n_motors = map(pulse_strength, q3_max, pulse_max, 1, 4);
-  else if (pulse_strength > q2_max)
-    n_motors = map(pulse_strength, q2_max, q3_max, 1, 4);
-  else if (pulse_strength > q1_max)
-    n_motors = map(pulse_strength, q1_max, q2_max, 1, 4);
-  else
-    n_motors = map(pulse_strength, pulse_min, q1_max, 1, 4);
-  vibrateMotors();
+  pulse_strength = map(value, 0, 300, 0, 255);
+  // if (pulse_strength > q3_max)
+  //   n_motors = map(pulse_strength, q3_max, pulse_max, 1, 4);
+  // else if (pulse_strength > q2_max)
+  //   n_motors = map(pulse_strength, q2_max, q3_max, 1, 4);
+  // else if (pulse_strength > q1_max)
+  //   n_motors = map(pulse_strength, q1_max, q2_max, 1, 4);
+  // else
+  //   n_motors = map(pulse_strength, pulse_min, q1_max, 1, 4);
+  vibrateMotors(pulse_strength);
 }
 
-void vibrateMotors() {
+void vibrateMotors(int pulse_strength) {
   // TODO
   // Activate more than one motor based on n_motors
-  timeDifference = currentTime - previousTime;
-  if (timeDifference >= 2000 - pulse_strength) {
-    Serial.println("Motor beeped");
-    analogWrite(motorPin, pulse_strength);
-    previousTime = currentTime;
-  }
+  // timeDifference = currentTime - previousTime;
+  // if (timeDifference >= 2000 - pulse_strength) {
+  //   Serial.println("Motor beeped");
+  //   analogWrite(motorPin, pulse_strength);
+  //   previousTime = currentTime;
+  // }
+  analogWrite(motorPin, pulse_strength);
 }
 
 void vibrateMotorPttern(int patternNumber) {
@@ -134,8 +141,6 @@ void vibrateMotorPttern(int patternNumber) {
 }
 
 float readVoltage() {
-  // TODO
-  // read the voltage from the batteries using analog read
   int sensorValue = analogRead(A0);              // Read the voltage from analog input pin A0
   float voltage = sensorValue * (5.0 / 1023.0);  // Convert the sensor value to voltage (assuming 5V reference voltage)
   return voltage;
@@ -162,4 +167,5 @@ void BMS() {
 void sysStop() {
   // TODO
   // Stops everything, resets all states and also turns off any running vibrations
+  analogWrite(motorPin, 0);
 }

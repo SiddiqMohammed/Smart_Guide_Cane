@@ -1,10 +1,14 @@
 #include <Maxbotix.h>
 #define VOLT_PIN A1
 
-int pw_pin = 9;
+int pw_pin = 11;
 Maxbotix rangeSensorPW(pw_pin, Maxbotix::PW, Maxbotix::LV);
 int buttonPin = 8;
-int motor_pin = 5;
+int motor_pin1 = 15;
+int motor_pin2 = 16;
+int motor_pin3 = 17;
+int motor_pin4 = 18;
+
 int debounceTime = 50;
 double distance;
 
@@ -28,7 +32,10 @@ double low_volt = 3.7;
 void setup() {
   // put your setup code here, to run once:
    Serial.begin(9600);
-   pinMode(motor_pin, OUTPUT);
+   pinMode(motor_pin1, OUTPUT);
+   pinMode(motor_pin2, OUTPUT);
+   pinMode(motor_pin3, OUTPUT);
+   pinMode(motor_pin4, OUTPUT);
    pinMode(buttonPin, INPUT);
    pinMode(VOLT_PIN, INPUT);
    
@@ -49,39 +56,41 @@ void loop() {
   //Serial.println(kaldist);
   
   //delay(50);
-  old_kaldist = kaldist;
+  
   fil_dist = expo_filter(old_kaldist, kaldist);
   //Serial.println(kaldist);
   vibrateMotors(fil_dist,lastTimeMotor,toggleMotor);
+  
   //BMS(lastTimeBMS);
+  old_kaldist = kaldist;
   //}
 }
 
-void toggleButton(int &lastButtonState, int &toggleState) {
-  // TODO - make a button reader that changes flag state
-  // to start/stop the entire system.
-  int buttonState = digitalRead(buttonPin);//read the state of buttonPin and store it as buttonState (0 or 1)
-  long unsigned curr_time = millis();
-  if((millis() - lastPress) > debounceTime)//if the time between the last buttonChange is greater than the debounceTime
-  {
-    lastPress = millis();//update lastPress                                                     
-    if(buttonState == 0 && lastButtonState == 1)//if button is pressed and was released last change
-    {
-       
-      toggleState =! toggleState;
-      lastButtonState = 0;    //record the lastButtonState
-      while (curr_time + 1000 > millis()) {
-        analogWrite(motor_pin, 200);
-      }
-      analogWrite(motor_pin, 0);
-    }
-  
-    if(buttonState == 1 && lastButtonState == 0)//if button is not pressed, and was pressed last change
-    {
-      lastButtonState = 1;//record the lastButtonState
-    }
-  }
-}
+//void toggleButton(int &lastButtonState, int &toggleState) {
+//  // TODO - make a button reader that changes flag state
+//  // to start/stop the entire system.
+//  int buttonState = digitalRead(buttonPin);//read the state of buttonPin and store it as buttonState (0 or 1)
+//  long unsigned curr_time = millis();
+//  if((millis() - lastPress) > debounceTime)//if the time between the last buttonChange is greater than the debounceTime
+//  {
+//    lastPress = millis();//update lastPress                                                     
+//    if(buttonState == 0 && lastButtonState == 1)//if button is pressed and was released last change
+//    {
+//       
+//      toggleState =! toggleState;
+//      lastButtonState = 0;    //record the lastButtonState
+//      while (curr_time + 1000 > millis()) {
+//        analogWrite(motor_pin, 200);
+//      }
+//      analogWrite(motor_pin, 0);
+//    }
+//  
+//    if(buttonState == 1 && lastButtonState == 0)//if button is not pressed, and was pressed last change
+//    {
+//      lastButtonState = 1;//record the lastButtonState
+//    }
+//  }
+//}
 
 double readSensor() {
   // TODO
@@ -102,7 +111,10 @@ void vibrateMotors(double distance, long unsigned &last_time_motor, int &on_off_
   // vibe_val = 250 - (distance * (250.0/ max_dist));
   int vibe_val = 255 - map(distance, 10, 250, 0, 255);
   double vibe_delay = ((distance * distance) * 0.01);
-  analogWrite(motor_pin, vibe_val);
+  analogWrite(motor_pin1, vibe_val);
+  analogWrite(motor_pin2, vibe_val);
+  analogWrite(motor_pin3, vibe_val);
+  analogWrite(motor_pin4, vibe_val);
   
   Serial.println(vibe_val);
 //  long unsigned curr_time = millis();
@@ -128,34 +140,37 @@ double readVoltage(int pin) { //make a double and make the pin input a parameter
   
 }
 
-void BMS(long unsigned &last_time_battery) {
-  // TODO - Battery management system
-  // run readVoltage and also run vibrations in low battery mode
-  // Morse maybe?
-  // This function runs everytime loop is run. If it detects low voltage, a 12 pulse LED flash with occur using delays. 
-  // This can only happen once every specified amount
-  long unsigned warning_delay = 10000; //10 Second delay
-  long unsigned curr_time = millis(); 
-  
-  double curr_voltage = readVoltage(VOLT_PIN);
-  //Serial.println(curr_voltage);
-  //sensorValue = analogRead(sensorPin);
-  if ((curr_voltage < low_volt) && ((curr_time - last_time_battery > warning_delay) || (last_time_battery == 0))) {
-    Serial.print("Low Power");
-    analogWrite(motor_pin, 0);
-    for(int i=1; i < 12; i++) {
-  
-    analogWrite(motor_pin, 250);
-   // stop the program for <200> milliseconds:
-    delay(200);
-   // turn the ledPin off:
-    analogWrite(motor_pin, 0);
-   // stop the program for for <200> milliseconds:
-    delay(200);
-    
-    }
-    last_time_battery = millis();
-    
+//void BMS(long unsigned &last_time_battery) {
+//  // TODO - Battery management system
+//  // run readVoltage and also run vibrations in low battery mode
+//  // Morse maybe?
+//  // This function runs everytime loop is run. If it detects low voltage, a 12 pulse LED flash with occur using delays. 
+//  // This can only happen once every specified amount
+//  long unsigned warning_delay = 10000; //10 Second delay
+//  long unsigned curr_time = millis(); 
+//  
+//  double curr_voltage = readVoltage(VOLT_PIN);
+//  //Serial.println(curr_voltage);
+//  //sensorValue = analogRead(sensorPin);
+//  if ((curr_voltage < low_volt) && ((curr_time - last_time_battery > warning_delay) || (last_time_battery == 0))) {
+//    Serial.print("Low Power");
+//    analogWrite(motor_pin1, 0);
+//    analogWrite(motor_pin2, 0);
+//    analogWrite(motor_pin3, 0);
+//    analogWrite(motor_pin4, 0);
+//    for(int i=1; i < 12; i++) {
+//  
+//    analogWrite(motor_pin, 250);
+//   // stop the program for <200> milliseconds:
+//    delay(200);
+//   // turn the ledPin off:
+//    analogWrite(motor_pin, 0);
+//   // stop the program for for <200> milliseconds:
+//    delay(200);
+//    
+//    }
+//    last_time_battery = millis();
+//    
 //  if ((curr_voltage <= low_volt)&((millis()-last)>10000)) {
 //    for (int i=1; i < 3; i++) {
 //      last = millis();
@@ -164,11 +179,11 @@ void BMS(long unsigned &last_time_battery) {
 //        continue;
 //      }
 //    }
-//  }
+//}
   
-  }
+ // }
   
-}
+//}
 
 double dataFiltering(double data){
   // TODO
